@@ -62,7 +62,7 @@ function Avsilsibility() {
     {
       day: "Thursday",
       timeSlot: [
-       "00:00-01:00",
+        "00:00-01:00",
         "01:00-02:00",
         "02:00-03:00",
         "03:00-04:00",
@@ -108,19 +108,24 @@ function Avsilsibility() {
   const [result, setResult] = useState([]);
 
   const handleCheckboxChange = (e, dayName) => {
-    if (e.target.checked) {
-      setSelectedDays([...selectedDays, dayName]);
+    if (dayName === "All Days") {
+      if (e.target.checked) {
+        setSelectedDays(["All Days"]);
+        // Clear selected time slots for all other days
+        setSelectedTime({});
+      } else {
+        setSelectedDays([]);
+      }
     } else {
-      setSelectedDays(selectedDays.filter((day) => day !== dayName));
-      // Clear selected time slots for the unselected day
-      setSelectedTime((prevState) => {
-        const newState = { ...prevState };
-        delete newState[dayName];
-        return newState;
-      });
+      setSelectedDays((prevSelectedDays) =>
+        prevSelectedDays.includes(dayName)
+          ? prevSelectedDays.filter((day) => day !== dayName)
+          : [...prevSelectedDays, dayName]
+      );
     }
   };
-
+  
+  
   const handleTime = (e, dayName, time) => {
     setSelectedTime((prevState) => {
       const newState = { ...prevState };
@@ -148,9 +153,13 @@ function Avsilsibility() {
 
         if (selectedTime[day]) {
           selectedTime[day].forEach((time, j) => {
-            const [opening, closing] = time.split('-');
-            newResult.push(`availability[${i}][day]timearr[${j}][opening]:${opening}`);
-            newResult.push(`availability[${i}][day]timearr[${j}][closing]:${closing}`);
+            const [opening, closing] = time.split("-");
+            newResult.push(
+              `availability[${i}][day]timearr[${j}][opening]:${opening}`
+            );
+            newResult.push(
+              `availability[${i}][day]timearr[${j}][closing]:${closing}`
+            );
           });
         }
       });
@@ -160,7 +169,6 @@ function Avsilsibility() {
       setResult([]); // Clear the result if no days are selected
     }
   }, [selectedDays, selectedTime]);
-  
 
   // useEffect(() => {
   //   if (selectedDays?.length > 0) {
@@ -178,31 +186,70 @@ function Avsilsibility() {
 
   return (
     <div>
-      {days?.map((data, index) => (
-        <div key={index}>
-          <input
-            onChange={(e) => handleCheckboxChange(e, data.day)}
-            type="checkbox"
-            checked={selectedDays.includes(data.day)}
-          />
-          {data?.day}
-          <div style={{ display: "flex", gap: "10px" }}>
-            {data?.timeSlot?.map((time, i) => (
-              <div key={i} style={{ display: "flex" }}>
-                <input
-                  onChange={(e) => handleTime(e, data.day, time)}
-                  type="checkbox"
-                  checked={
-                    selectedTime[data.day] &&
-                    selectedTime[data.day].includes(time)
-                  }
-                />
-                <p>{time}</p>
-              </div>
-            ))}
+     
+  <div>
+ 
+  <div>
+    {days.map((data, index) => (
+      <div key={index}>
+        {data.day === "All Days" ? (
+          <div>
+            <input
+              onChange={(e) => handleCheckboxChange(e, data.day)}
+              type="checkbox"
+              checked={selectedDays.includes("All Days")}
+            />
+            {data.day}
+            <div style={{ display: "flex", gap: "10px" }}>
+              {data.timeSlot.map((time, i) => (
+                <div key={i} style={{ display: "flex" }}>
+                  <input
+                    onChange={(e) => handleTime(e, data.day, time)}
+                    type="checkbox"
+                    checked={
+                      selectedTime[data.day] &&
+                      selectedTime[data.day].includes(time)
+                    }
+                  />
+                  <p>{time}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ) : (
+          <div style={{ display: selectedDays.includes("All Days") ? "none" : "block" }}>
+            <input
+              onChange={(e) => handleCheckboxChange(e, data.day)}
+              type="checkbox"
+              checked={selectedDays.includes(data.day)}
+            />
+            {data.day}
+            <div style={{ display: "flex", gap: "10px" }}>
+              {data.timeSlot.map((time, i) => (
+                <div key={i} style={{ display: "flex" }}>
+                  <input
+                    onChange={(e) => handleTime(e, data.day, time)}
+                    type="checkbox"
+                    checked={
+                      selectedTime[data.day] &&
+                      selectedTime[data.day].includes(time)
+                    }
+                  />
+                  <p>{time}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+
+
+  </div>
+
+
+
     </div>
   );
 }
